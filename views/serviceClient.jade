@@ -1,0 +1,33 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    script(src="javascripts/jquery.min.js")
+    script(src="/socket.io/socket.io.js")
+    script(src="javascripts/serviceChat.js")
+
+  body
+    h1= title
+    div
+      input(type='button' value='客服端登陆' id='serviceLogin' style="width:20%")
+      input(type='text' id='serviceLoginReturn' placeholder="服务器返回登陆结果" style="width:60%")
+    div
+      p 获得分配用户:
+      input(type='text' id='assignUser' placeholder="服务器返回登陆结果" style="width:60%")
+
+    div
+      p 客服收到来自用户的消息:
+      input(type='text' id='reciverMsg' style="width:60%")
+
+    div
+      p 客服给用户发送消息
+      input(type='button' value='给用户发送消息' id='sendMsgBtn' style="width:20%")
+      input(type='text' value='不能再便宜了亲' id='sendMsg' style="width:60%")
+
+    div
+      p 用户退出
+      input(type='text' id='agentLogout' style="width:60%")
+
+
+
