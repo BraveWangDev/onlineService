@@ -27,8 +27,8 @@ var server = http.createServer(app);
  */
 
 var io = require('socket.io').listen(server);
-var serviceUserArr = new Array(); //客服数组
-var agentUserArr = new Array();   //用户数组
+var serviceUserArr = new Array(); // 客服数组
+var agentUserArr = new Array();   // 用户数组
 
 io.sockets.on('connection', ioConnection);
 
@@ -41,24 +41,22 @@ function ioConnection(socket) {
      * @parameter 客服信息
      */
     socket.on('serviceLogin', function (data) {
-        console.log("-------------------------------- 分割线 -----------------------------------");
-        console.log("服务器:有客服登陆, id = " + data.serviceId + ", 昵称 = " + data.nickName + ", 渠道 = " + data.channel);
+        console.log("-------------------------------- 客服登陆 -----------------------------------");
+        console.log("服务器:有客服登陆, id = " + data.serviceId + ", 昵称 = " + data.serviceNickName + ", 渠道 = " + data.channel);
         socket.join(data.serviceId);
         socket.room = data.serviceId;
         socket.serviceId = data.serviceId;
-        socket.nickName = data.nickName;
+        socket.serviceNickName = data.serviceNickName;
         socket.channel = data.channel;
         console.log("创建客服会话,并存客服信息完成");
         serviceUserArr.push(socket);
         console.log("更新客服队列完成--等待用户连接...");
-        var agentInfo = {resCode:0, serviceId : data.serviceId, nickName : data.nickName}
+        var agentInfo = {resCode:0, serviceId : data.serviceId, serviceNickName : data.serviceNickName}
         socket.emit('serviceLoginResult', agentInfo);
 
         ////test
         //var s = serviceUserArr[0];
         //console.log("取出客服 socket.id = " + s.id);
-        console.log("-------------------------------- 分割线 -----------------------------------");
-
     });
 
     /**
@@ -67,6 +65,8 @@ function ioConnection(socket) {
      * @returns 分配客服的socket实例
      */
     function assignService() {
+        console.log("--------- 分配客服方法 ---------");
+        //TODO 判断每次客服的繁忙程度 分配客服
         var serviceSocket;
         if (serviceUserArr.length > 0) {
             for (var i = 0; i < serviceUserArr.length; i++) {
@@ -83,6 +83,8 @@ function ioConnection(socket) {
      * @returns 当前会话的Socket实例
      */
     function getServiceSocket() {
+        console.log("--------- 获取当前会话的Socket实例 ---------");
+        //TODO 获取当前会话的socket（客服Socket）
         var serviceSocket;
         if (serviceUserArr.length > 0) {
             for (var i = 0; i < serviceUserArr.length; i++) {
@@ -102,45 +104,38 @@ function ioConnection(socket) {
      * @parameter 用户信息
      */
     socket.on('agentLogin', function (data) {
-        console.log("-------------------------------- 分割线 -----------------------------------");
-        console.log('服务器:有用户登陆, 用户id = ' + data.userId + " , 昵称 = " + data.nikeName + " , 渠道 = " + data.channel);
+        console.log("-------------------------------- 用户登录 -----------------------------------");
+        console.log('服务器:有用户登陆, 用户id = ' + data.agentId + " , 昵称 = " + data.agentNickName + " , 渠道 = " + data.channel);
         //执行分配用户逻辑
         var serviceSocket = assignService();
         if(!serviceSocket){
             console.log("当前没有客服在线");
+            var loginResult = {resCode : 1, message : '当前没有客服在线'};
+            socket.emit('agentLoginResult', loginResult);
             return;
         }
         //加入分配客服的聊天室
         socket.join(serviceSocket.serviceId);
         socket.room = serviceSocket.room;
-        socket.userId = data.userId;
-        socket.nikeName = data.nikeName;
+        socket.agentId = data.agentId;
+        socket.agentNickName = data.agentNickName;
         socket.channel = data.channel;
-        console.log("用户 : " + data.userId + " , 被分配到客服 " + serviceSocket.nickName + " 的聊天室中");
+        console.log("用户 : " + data.agentId + " , 被分配到客服 " + serviceSocket.agentNickName + " 的聊天室中");
         console.log("打印当前会话下用户数(包含一个客服) = " + io.sockets.adapter.rooms[serviceSocket.room].length);
 
         //更新客服下的用户数组
-        console.log("客服:" + serviceSocket.nickName + ",用户数组更新前 agentUserArr = " + agentUserArr.length);
+        console.log("客服:" + serviceSocket.serviceNickName + ",用户数组更新前 agentUserArr = " + agentUserArr.length);
+        //TODO 找到当前客服下的用户数组 agentUserArr
         agentUserArr.push(socket);
-        console.log("客服:" + serviceSocket.nickName + ",用户数组更新后 agentUserArr = " + agentUserArr.length);
+        console.log("客服:" + serviceSocket.serviceNickName + ",用户数组更新后 agentUserArr = " + agentUserArr.length);
 
         //返回用户登陆结果
         console.log("当前客服serviceSocket.serviceId = " + serviceSocket.serviceId);
-        console.log("当前客服serviceSocket.nickName = " + serviceSocket.nickName);
-        var serviceInfo = {resCode:0, serviceId : serviceSocket.serviceId, nickName : serviceSocket.nickName}
+        console.log("当前客服serviceSocket.serviceNickName = " + serviceSocket.serviceNickName);
+        var serviceInfo = {resCode : 0, serviceId : serviceSocket.serviceId, serviceNickName : serviceSocket.serviceNickName}
         socket.emit('agentLoginResult', serviceInfo);
         //给用户所在客服发送添加用户消息
-        var serviceSocket = getServiceSocket();
         serviceSocket.emit('assignUser', data);
-
-        ////构建测试数据
-        //var returnData = {}
-        //returnData.from = data.userId;
-        //returnData.to= serviceSocket.serviceId;
-        //returnData.message = '您好,欢迎使用XX客服系统,有什么需要帮助?';
-        //console.log('服务器:模拟客服回复-发送方:' + returnData.from + " , 送达方:" + returnData.to + " , 消息:" + returnData.message);
-        //发送给指定聊天室的指定客户
-        //socket.emit('serviceToUserMsg', data);
     });
 
     /**
@@ -150,21 +145,21 @@ function ioConnection(socket) {
      * @returns {*} 指定Id的用户Socket实例
      */
     function getAgentSocket(agentUserArr, agentId) {
+        console.log("--------- 根据用户Id获取用户实例 ---------");
         var agentSocket;
         if (agentUserArr.length > 0) {
             console.log("agentUserArr.length = " + agentUserArr.length);
             for (var i = 0; i < agentUserArr.length; i++) {
-                console.log("匹配userId = " + agentId + ", 匹配项 = " + agentUserArr[i].userId);
-                if(agentId == agentUserArr[i].userId){
-                    console.log("找到userId实例");
+                console.log("匹配agentId = " + agentId + ", 匹配项 = " + agentUserArr[i].agentId);
+                if(agentId == agentUserArr[i].agentId){
+                    console.log("找到agentId实例");
                     agentSocket = agentUserArr[i];
                 } else {
-                    console.log("未找到userId实例");
+                    console.log("未找到agentId实例");
                 }
             }
-            //console.log("agentUserArr[i] = " + util.inspect(agentSocket));
             console.log("agentSocket.id = " + agentSocket.id);
-            console.log("agentSocket.nickName = " + agentSocket.nikeName);
+            console.log("agentSocket.agentNickName = " + agentSocket.agentNickName);
         } else {
             agentSocket = false;
         }
@@ -173,6 +168,7 @@ function ioConnection(socket) {
 
     //收到客服端的默认回复
     socket.on('defRespondToAgent', function (data) {
+        console.log("-------------------------------- 收到客服端的默认回复 -----------------------------------");
         console.log('收到客服端的默认回复, from = ' + data.from + " , to = " + data.to + " , 消息 = " + data.message);
         //找到这个用户的socket,并转发给这个用户
         var agentSocket = getAgentSocket(agentUserArr, data.to);
@@ -183,34 +179,30 @@ function ioConnection(socket) {
      * 服务器收到用户消息,转发给客服
      */
     socket.on('userToServiceMsg', function (data) {
+        console.log("---------------------------- 服务器收到用户消息,转发给客服 -------------------------------");
         console.log('服务器收到用户发给客服的消息 data.from = ' + data.from + " , data.to = " + data.to + " , data.message = " + data.message);
-
         //将消息转发给客服端
+        //TODO 根据to客服的id获取到客服Socket实例
         var serviceSocket = getServiceSocket();
         console.log("serviceSocket.serviceId = " + serviceSocket.serviceId);
         serviceSocket.emit('userToServiceMsg', data);
-        //获得当前房间内的所有客户端(人)
-        //console.log("-----打印当前socket.room = " + socket.room);
-        //var clients = io.sockets.adapter.rooms[socket.room].length;
-        //console.log("打印client对象 = " + clients);//JSON.stringify(clients)
-        ////遍历找到该用户
-        //clients.forEach(function(client){
-        //  console.log("client in " + socket.room + " ==== " + client);
-        //  if(client.username == data.to){
-        //    //指定用户发消息 - 服务端接收来自用户端的消息 - 转发给客服
-        //      client.emit('serviceReciver', data);
-        //  }
-        //});
     });
 
     /**
      * 服务器收到客服消息,转发给用户
      */
     socket.on('serviceToUserMsg', function (data) {
+        console.log("---------------------------- 服务器收到客服消息,转发给用户 -------------------------------");
         console.log('服务器收到客服发给用户的消息 data.from = ' + data.from + " , data.to = " + data.to + " , data.message = " + data.message);
-
-        //将消息转发给客服端
+        //将消息转发给用户端
         var agentSocket = getAgentSocket(agentUserArr, data.to);
+        //判断用户还在不在
+        if(!agentSocket){
+            console.log('用户已经离开');
+            var error = {resCode : 1, message: '未找到该用户!'};
+            //发送给客服，用户还在不在
+            socket.emit('error', data);
+        }
         agentSocket.emit('serviceToUserMsg', data);
         //获得当前房间内的所有客户端(人)
         //console.log("-----打印当前socket.room = " + socket.room);
@@ -227,104 +219,19 @@ function ioConnection(socket) {
     });
 
     /**
-     * 用户退出
-     */
-    socket.on('agentLogout', function (data) {
-        console.log('用户退出了 id = ' + data.userId + ' , nickName = ' + data.nickName);
-        //将消息转发给客服端
-        var agentSocket = getAgentSocket(agentUserArr, data.userId);
-        agentSocket.emit('agentLogout', data);
-        //获得当前房间内的所有客户端(人)
-        //console.log("-----打印当前socket.room = " + socket.room);
-        //var clients = io.sockets.adapter.rooms[socket.room].length;
-        //console.log("打印client对象 = " + clients);//JSON.stringify(clients)
-        ////遍历找到该用户
-        //clients.forEach(function(client){
-        //  console.log("client in " + socket.room + " ==== " + client);
-        //  if(client.username == data.to){
-        //    //指定用户发消息 - 服务端接收来自用户端的消息 - 转发给客服
-        //      client.emit('serviceReciver', data);
-        //  }
-        //});
-    });
-
-
-    ///**
-    // * 服务器收到客服消息,转发给用户
-    // */
-    //socket.on('userToServiceMsg', function (data) {
-    //    console.log('服务器收到客服发给用户的消息 data.from = ' + data.from + " , data.to = " + data.to + " , data.message = " + data.message);
-    //    //找到这个用户的socket,并转发给这个用户
-    //    var agentSocket = getAgentSocket(agentUserArr, data.to);
-    //    agentSocket.emit('userToServiceMsg', data);
-    //    //获得当前房间内的所有客户端(人)
-    //    //console.log("-----打印当前socket.room = " + socket.room);
-    //    //var clients = io.sockets.adapter.rooms[socket.room].length;
-    //    //console.log("打印client对象 = " + clients);//JSON.stringify(clients)
-    //    ////遍历找到该用户
-    //    //clients.forEach(function(client){
-    //    //  console.log("client in " + socket.room + " ==== " + client);
-    //    //  if(client.username == data.to){
-    //    //    //指定用户发消息 - 服务端接收来自用户端的消息 - 转发给客服
-    //    //      client.emit('serviceReciver', data);
-    //    //  }
-    //    //});
-    //});
-
-    /**
-     * 服务器收到客服消息
-     * 1,根据消息目标ID找到聊天室,将消息发给对应客服
-     * * 站在用户角度为1对1 : 客服端收到消息后根据发送人ID更新UI
-     * @parameter 消息内容(发送方 接收方 消息内容)
-     */
-    socket.on('serviceSendMsg', function (data) {
-        data.from = '001';
-        data.to = '1001';
-        data.message = 'Test-来自客服的消息';
-        console.log('收到客服消息 data.from = ' + data.from + " , data.to = " + data.to + " , data.message = " + data.message);
-        //获得当前房间内的所有客户端(人)
-        var clients = io.sockets.clients(socket.room);
-        console.log("打印client对象 = " + JSON.stringify(clients));
-        //遍历找到该用户
-        clients.forEach(function (client) {
-            console.log("client in " + socket.room + " ==== " + client);
-            if (client.username == data.to) {
-                //指定用户发消息 - 服务端接收来自用户端的消息
-                client.emit('serviceToUserMsg', data);
-            }
-        });
-    });
-
-    ///**
-    // * 客服登出
-    // * 1,客服退出,连同自己聊天室内所有人离开会话
-    // * @parameter 客服信息
-    // */
-    //socket.on('serviceLogout', function (data) {
-    //    console.log('客服退出 serviceId = ' + data.serviceId);
-    //    //获得当前房间内的所有客户端(人)
-    //    console.log("打印当前客服所在的socket.room = " + socket.room);
-    //    var clients = io.sockets.clients(socket.room);
-    //    console.log("打印client对象 = " + JSON.stringify(clients));
-    //    //遍历所有用户,退出聊天室
-    //    clients.forEach(function (client) {
-    //        console.log("client in " + socket.room + " ==== " + client);
-    //        client.leave(socket.room);
-    //    });
-    //});
-
-    /**
      * 用户登出
      * 1,用户退出,输出信息
      * @parameter 用户信息
      */
     socket.on('agentLogout', function (data) {
-        console.log('有客户退出 userId = ' + data.userId + ", nickName = " + socket.nikeName);
+        console.log("---------------------------- 用户登出 -------------------------------");
+        console.log('有客户退出 agentId = ' + data.agentId + ", agentNickName = " + socket.agentNickName);
         //处理退出
-        getAgentSocket(agentUserArr, data.userId).leave(getServiceSocket().room);
+        getAgentSocket(agentUserArr, data.agentId).leave(getServiceSocket().room);
         //转发给客服端
         getServiceSocket().emit('agentLogout', data);
     });
+
 }
 
 /**
