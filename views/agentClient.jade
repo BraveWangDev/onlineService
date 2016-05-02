@@ -10,8 +10,13 @@ html
 body
   h1= title
   div
+    input(type='text' value='' id='agentId' style="width:20%" placeholder="用户id")
+    input(type='text' value='' id='agentNickName' style="width:20%" placeholder="昵称")
+
+  div
     input(type='button' value='用户端登陆' id='agentLogin' style="width:20%")
     input(type='text' id='agentLoginReturn' placeholder="服务器返回登陆结果" style="width:60%")
+
   div
     p 获得客服端默认回复:
     input(type='text' id='defRespondToAgent' placeholder="服务器返回登陆结果" style="width:60%")

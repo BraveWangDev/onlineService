@@ -18,6 +18,8 @@ $(document).ready(function(){
 		console.log("-------------------------------- 发送用户登录信息 -----------------------------------");
 		//TODO 登录信息来自页面输入（或赋值）
 		var agentInfo = {agentId : '1001', agentNickName : '测试用户1001', channel : '测试App-用户端'};
+		agentInfo.agentId = $('#agentId').val();
+		agentInfo.agentNickName = $('#agentNickName').val();
 		socket.emit('agentLogin', agentInfo);
 		//保存自己的信息
 		socket.agentId = agentInfo.agentId;
@@ -65,14 +67,14 @@ $(document).ready(function(){
 		sendMsg.to= socket.serviceId;
 		sendMsg.message = $('#sendMsg').val();
 		console.log('向客服发送消息 sendMsg.from = ' + sendMsg.from + " , sendMsg.to = " + sendMsg.to + " , sendMsg.message = " + sendMsg.message);
-		socket.emit('userToServiceMsg', sendMsg);
+		socket.emit('agentToServiceMsg', sendMsg);
 		//TODO 更新UI - 显示区域内容显示   清空输入框
 	});
 
 	/**
 	 * 收到客服端的默认回复
 	 */
-	socket.on('userToServiceMsg', function (data) {
+	socket.on('agentToServiceMsg', function (data) {
 		console.log('--------------------------- 收到客服端的默认回复 ------------------------------');
 		console.log('收到客服端的默认回复, from = ' + data.from + " , to = " + data.to + " , 消息 = " + data.message);
 		//TODO 更新页面显示 - 更新对话区域内容
@@ -85,7 +87,7 @@ $(document).ready(function(){
 	 * * 站在用户角度为1对1 : 客服端收到消息后根据发送人ID更新UI
 	 * parameter: 消息内容(发送方 接收方 消息内容)
 	 */
-	socket.on('serviceToUserMsg',function(data){
+	socket.on('serviceToAgentMsg',function(data){
 		console.log('--------------------------- 接收客服回复消息 ------------------------------');
 		console.log('打印当前socket.room = ' + socket.room);//服务器是不会返回并更新本地socket对象的
 		console.log('收到客服回复; data.from = ' + data.from + " , data.to = " + data.to + " , data.message = " + data.message);
