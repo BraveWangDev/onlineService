@@ -105,6 +105,7 @@ $(document).ready(function(){
 		var sendMsg = {};
 		sendMsg.agentId = socket.agentId;
 		sendMsg.agentNickName = socket.agentNickName;
+		sendMsg.serviceId = socket.serviceId;
 		socket.emit('agentLogout', sendMsg);
 		//TODO 关闭页面， 清理个人信息缓存
 	});

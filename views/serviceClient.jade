@@ -5,13 +5,20 @@ html
     link(rel='stylesheet', href='/stylesheets/style.css')
     script(src="javascripts/jquery.min.js")
     script(src="/socket.io/socket.io.js")
+    script(src="javascripts/mapTools.js")
     script(src="javascripts/serviceChat.js")
+
 
   body
     h1= title
     div
+      input(type='text' value='001' id='serviceId' style="width:20%" placeholder="用户id")
+      input(type='text' value='S1001' id='serviceNickName' style="width:20%" placeholder="昵称")
+
+    div
       input(type='button' value='客服端登陆' id='serviceLogin' style="width:20%")
       input(type='text' id='serviceLoginReturn' placeholder="服务器返回登陆结果" style="width:60%")
+
     div
       p 获得分配用户:
       input(type='text' id='assignUser' placeholder="服务器返回登陆结果" style="width:60%")

@@ -15,10 +15,12 @@ $(document).ready(function(){
 	$('#serviceLogin').click(function () {
 		console.log('--------------------------- 发送客服登录信息 ------------------------------');
 		//TODO 从页面拿到用户登录信息
-		var LoginInfo = {serviceId : '001', serviceNickName : '测试客服001', channel : '测试App-客服端'};
-		socket.emit('serviceLogin', LoginInfo);
+		var serviceInfo = {serviceId : '001', serviceNickName : '测试客服001', channel : '测试App-客服端'};
+		serviceInfo.serviceId = $('#serviceId').val();
+		serviceInfo.serviceNickName = $('#serviceNickName').val();
+		socket.emit('serviceLogin', serviceInfo);
 		//TODO 发接口验证用户有效性
-		console.log('发送客服登录信息 Json = ' + JSON.stringify(LoginInfo));
+		console.log('发送客服登录信息 Json = ' + JSON.stringify(serviceInfo));
 	});
 
 	/**
