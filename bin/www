@@ -338,18 +338,22 @@ function ioConnection(socket) {
      *  功能:删除数组元素.
      *  参数:dx删除元素的下标.
      */
-    Array.prototype.remove=function(dx){
+    Array.prototype.remove = function(dx){
 
-        if(isNaN(dx)||dx>this.length){return false;}
-        for(var i=0,n=0;i<this.length;i++)
-        {
-            if(this[i]!=this[dx])
-            {
-                this[n++]=this[i]
+        //判断可用
+        if(isNaN(dx) || dx > this.length){
+            return false;
+        }
+
+        //重新组装(略过要删除的)
+        for(var i = 0, n = 0; i < this.length; i++){
+            if(this[i] != this[dx]){
+                this[n++]=this[i];
             }
         }
-        this.length-=1
 
+        //数组长度-1
+        this.length-= 1;
     }
 }
 
