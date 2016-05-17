@@ -4,13 +4,30 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+// mongoose初始化
+//var mongoose = require('mongoose'),
+//    models = require('./models'),         //引入数据库模块(包含全部模型)
+//    dbUrl = process.env.MONGOHQ_URL || 'mongodb://@localhost:27017/service',
+//    db = mongoose.connect(dbUrl, {safe: true});
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
-var serviceClient = require('./routes/serviceClient');
-var agentClient = require('./routes/agentClient');
+//var routes = require('./routes/index');
+//var users = require('./routes/users');
+//var serviceClient = require('./routes/serviceClient');
+//var agentClient = require('./routes/agentClient');
+
+var routes = require('./routes');
 
 var app = express();
+
+//app.use(function(req, res, next) {
+//  //检查模型存在
+//  if (!models.serviceUser) {
+//    return next(new Error("No models."));
+//  }
+//  //原型赋值给请求体request
+//  req.models = models;
+//  return next();
+//});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -24,11 +41,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// routes...
-app.use('/', routes);
-app.use('/users', users);
-app.use('/agentClient', agentClient);
-app.use('/serviceClient', serviceClient);
+//// routes...
+//app.use('/', routes.index);
+//app.use('/agentClient', routes.agentClient);
+//app.use('/serviceClient', routes.serviceClient);
+
+// Pages and routes
+app.get('/', routes.index);
+app.get('/agentClient', routes.agentClient.test);
+app.get('/serviceClient', routes.serviceClient.test);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
