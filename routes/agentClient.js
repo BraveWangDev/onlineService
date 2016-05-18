@@ -10,6 +10,6 @@
 
 
 
-exports.test = function(req, res, next) {
+exports.testAgentClient = function(req, res, next) {
   res.render('agentClient', { title: 'agentClient' });
 };
