@@ -22,7 +22,7 @@ var app = express();
 //20160518 add mongose添加后检验models完整性中间件
 app.use(function(req, res, next) {
   //检查模型存在
-  if (!models.serviceModel) {
+  if (!models.serviceModel || !models.commonModel) {
     return next(new Error("No models."));
   }
   //原型赋值给请求体request对象
@@ -52,13 +52,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Pages and routes
 app.get('/', routes.index);                                         // 首页
-app.get('/serviceRegister', routes.serviceClient.register);                // 注册页面跳转
-app.post('/serviceRegister', routes.serviceClient.registerPost);           // 提交注册信息
+app.get('/serviceRegister', routes.serviceClient.register);         // 注册页面跳转
+app.post('/serviceRegister', routes.serviceClient.registerPost);    // 提交注册信息
 app.get('/serviceLogin', routes.serviceClient.login);               // 登陆页面跳转
 app.post('/serviceLogin', routes.serviceClient.loginPost);          // 提交登陆信息
 app.get('/serviceClient', routes.serviceClient.testServiceClient);  // 客服端页面跳转
 app.get('/agentClient', routes.agentClient.testAgentClient);        // 用户端页面跳转
+app.get('/commonList', routes.common.commonList);                   // 常用语页面跳转
 
+// REST Api Routes
+app.get('/api/common/:username', routes.common.find);               //查找当前用户下的全部常用语
+app.post('/api/common', routes.common.add);                         //添加常用语
 /** ******************* error handlers ******************* **/
 
 // catch 404 and forward to error handler

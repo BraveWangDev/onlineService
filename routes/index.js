@@ -13,7 +13,7 @@
 
 exports.serviceClient = require('./serviceClient');
 exports.agentClient = require('./agentClient');
-
+exports.common = require('./common');
 /*
  * GET home page.
  */
